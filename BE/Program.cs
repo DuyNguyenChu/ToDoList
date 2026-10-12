@@ -32,10 +32,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials(); 
+        policy.SetIsOriginAllowed(_ => true)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); 
     });
 });
 
@@ -43,7 +43,9 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContextPool<ToDolistContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), npgsqlOptions =>
+    var rawConnection = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+    var npgsqlConnection = BuildNpgsqlConnectionString(rawConnection);
+    options.UseNpgsql(npgsqlConnection, npgsqlOptions =>
     {
         npgsqlOptions.EnableRetryOnFailure(
             maxRetryCount: 3,
@@ -137,14 +139,13 @@ catch (Exception ex)
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.MapOpenApi();
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.MapOpenApi();
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ToDoList API v1");
+    c.RoutePrefix = "swagger";
+});
 
 app.UseCors("AllowReact");
 
@@ -158,6 +159,43 @@ app.MapHub<BE.Hubs.AppHub>("/hub/app");
 app.MapControllers();
 
 app.Run();
+
+static string BuildNpgsqlConnectionString(string raw)
+{
+    if (string.IsNullOrWhiteSpace(raw)) return raw;
+
+    raw = raw.Trim().Trim('"').Trim('\'');
+
+    // Chuyển đổi định dạng URI postgresql:// sang Key=Value chuẩn của ADO.NET Npgsql
+    if (raw.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase) ||
+        raw.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase))
+    {
+        try
+        {
+            var uri = new Uri(raw);
+            var userInfo = uri.UserInfo.Split(':', 2);
+            var username = userInfo.Length > 0 ? Uri.UnescapeDataString(userInfo[0]) : string.Empty;
+            var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : string.Empty;
+            var port = uri.Port > 0 ? uri.Port : 5432;
+            var database = uri.AbsolutePath.TrimStart('/');
+            if (string.IsNullOrEmpty(database)) database = "postgres";
+
+            return $"Host={uri.Host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+        }
+        catch
+        {
+            return raw;
+        }
+    }
+
+    // Nếu đã là chuỗi Key=Value, đảm bảo bật SSL Mode=Require cho Supabase
+    if (!raw.Contains("SSL Mode", StringComparison.OrdinalIgnoreCase))
+    {
+        raw = raw.TrimEnd(';') + ";SSL Mode=Require;Trust Server Certificate=true;";
+    }
+
+    return raw;
+}
 
 
 
