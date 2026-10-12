@@ -58,7 +58,7 @@ namespace BE.Controllers
         public async Task<IActionResult> Create([FromBody] ToDoListCreateDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            
+
             var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
                 ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value
                 ?? User.FindFirst("sub")?.Value;

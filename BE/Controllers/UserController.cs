@@ -25,8 +25,8 @@ namespace BE.Controllers
         private async Task<Guid?> GetCurrentUserIdAsync()
         {
             var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                     ?? User.FindFirst("sub")?.Value
-                     ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+                    ?? User.FindFirst("sub")?.Value
+                    ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
             if (Guid.TryParse(claim, out var id)) return id;
 
             try
@@ -35,8 +35,8 @@ namespace BE.Controllers
                 if (authResult.Succeeded && authResult.Principal != null)
                 {
                     claim = authResult.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                         ?? authResult.Principal.FindFirst("sub")?.Value
-                         ?? authResult.Principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+                        ?? authResult.Principal.FindFirst("sub")?.Value
+                        ?? authResult.Principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
                     if (Guid.TryParse(claim, out var authId)) return authId;
                 }
             }

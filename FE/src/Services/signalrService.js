@@ -1,6 +1,7 @@
 import * as signalR from "@microsoft/signalr";
 
-const HUB_URL = "http://localhost:5030/hub/app";
+const API_BASE = import.meta.env.VITE_API_URL || "https://todolist-nq3a.onrender.com";
+const HUB_URL = `${API_BASE.replace(/\/+$/, "")}/hub/app`;
 
 class SignalRService {
   constructor() {

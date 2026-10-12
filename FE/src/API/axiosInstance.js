@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5030",
+  baseURL: import.meta.env.VITE_API_URL || "https://todolist-nq3a.onrender.com",
   withCredentials: true,
 });
 

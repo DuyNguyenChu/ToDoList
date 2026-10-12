@@ -30,7 +30,7 @@ namespace BE.Controllers
             try
             {
                 var (token, role, userName, userId) = await _authenService.LoginAsync(loginDto);
-                
+
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { Message = "Thông tin xác thực không hợp lệ" });
@@ -39,15 +39,15 @@ namespace BE.Controllers
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = false,
-                    SameSite = SameSiteMode.Lax,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
                     Path = "/",
-                    Expires = DateTime.UtcNow.AddHours(12) 
+                    Expires = DateTime.UtcNow.AddHours(12)
                 };
                 Response.Cookies.Append("jwt", token, cookieOptions);
 
-                return Ok(new 
-                { 
+                return Ok(new
+                {
                     Message = "Đăng nhập thành công",
                     Role = role,
                     UserName = userName,
@@ -67,8 +67,8 @@ namespace BE.Controllers
             Response.Cookies.Delete("jwt", new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false,
-                SameSite = SameSiteMode.Lax,
+                Secure = true,
+                SameSite = SameSiteMode.None,
                 Path = "/"
             });
             return Ok(new { Message = "Đăng xuất thành công" });
