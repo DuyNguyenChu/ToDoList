@@ -123,99 +123,101 @@ const HomeLayout = () => {
 
   return (
     <div className="home-layout">
-      <header className="home-header">
-        <div className="header-left">
-          <input
-            type="text"
-            placeholder="Tìm kiếm..."
-            className="search-bar"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={handleSearch}
-          />
-        </div>
-        <div className="header-right">
-          {user && (
-            <button className="btn-add" onClick={() => setShowAddItemPopup(true)}>
-              + Vật phẩm
-            </button>
-          )}
-          {!user ? (
-            <div className="auth-links">
-              <button
-                type="button"
-                className="auth-btn-link"
-                onClick={() => setShowRegisterPopup(true)}
-              >
-                Đăng ký
+      <div className="home-top-bar">
+        <header className="home-header">
+          <div className="header-left">
+            <input
+              type="text"
+              placeholder="Tìm kiếm..."
+              className="search-bar"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearch}
+            />
+          </div>
+          <div className="header-right">
+            {user && (
+              <button className="btn-add" onClick={() => setShowAddItemPopup(true)}>
+                + Vật phẩm
               </button>
-              <span className="separator">/</span>
-              <button
-                type="button"
-                className="auth-btn-link"
-                onClick={() => setShowLoginPopup(true)}
-              >
-                Đăng nhập
-              </button>
-            </div>
-          ) : (
-            <div className="user-menu-container">
-              <button
-                className="user-toggle-btn"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              >
-                {user.name || "Người dùng"} <span>▼</span>
-              </button>
-              {isDropdownOpen && (
-                <div className="user-dropdown">
-                  <Link 
-                    to="/thong-tin-ca-nhan" 
-                    className="dropdown-item"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    Thông tin
-                  </Link>
-                  {user.role?.toLowerCase() === "admin" && (
+            )}
+            {!user ? (
+              <div className="auth-links">
+                <button
+                  type="button"
+                  className="auth-btn-link"
+                  onClick={() => setShowRegisterPopup(true)}
+                >
+                  Đăng ký
+                </button>
+                <span className="separator">/</span>
+                <button
+                  type="button"
+                  className="auth-btn-link"
+                  onClick={() => setShowLoginPopup(true)}
+                >
+                  Đăng nhập
+                </button>
+              </div>
+            ) : (
+              <div className="user-menu-container">
+                <button
+                  className="user-toggle-btn"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  {user.name || "Người dùng"} <span>▼</span>
+                </button>
+                {isDropdownOpen && (
+                  <div className="user-dropdown">
                     <Link 
-                      to="/quan-ly-tai-khoan" 
+                      to="/thong-tin-ca-nhan" 
                       className="dropdown-item"
                       onClick={() => setIsDropdownOpen(false)}
                     >
-                      Tài khoản
+                      Thông tin
                     </Link>
-                  )}
-                  <button onClick={handleLogout} className="dropdown-item logout-btn">
-                    Đăng xuất
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </header>
+                    {user.role?.toLowerCase() === "admin" && (
+                      <Link 
+                        to="/quan-ly-tai-khoan" 
+                        className="dropdown-item"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        Tài khoản
+                      </Link>
+                    )}
+                    <button onClick={handleLogout} className="dropdown-item logout-btn">
+                      Đăng xuất
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </header>
 
-      <nav className="home-tabs">
-        <button
-          className={`tab-btn ${activeTab === "cua-hang" ? "active" : ""}`}
-          onClick={() => navigate("/cua-hang")}
-        >
-          Cửa hàng
-        </button>
-        <button
-          className={`tab-btn ${activeTab === "vat-pham" ? "active" : ""}`}
-          onClick={() => navigate("/vat-pham")}
-        >
-          Vật phẩm
-        </button>
-        {user && (
+        <nav className="home-tabs">
           <button
-            className={`tab-btn ${activeTab === "can-mua" ? "active" : ""}`}
-            onClick={() => navigate("/can-mua")}
+            className={`tab-btn ${activeTab === "cua-hang" ? "active" : ""}`}
+            onClick={() => navigate("/cua-hang")}
           >
-            Cần mua
+            Cửa hàng
           </button>
-        )}
-      </nav>
+          <button
+            className={`tab-btn ${activeTab === "vat-pham" ? "active" : ""}`}
+            onClick={() => navigate("/vat-pham")}
+          >
+            Vật phẩm
+          </button>
+          {user && (
+            <button
+              className={`tab-btn ${activeTab === "can-mua" ? "active" : ""}`}
+              onClick={() => navigate("/can-mua")}
+            >
+              Cần mua
+            </button>
+          )}
+        </nav>
+      </div>
 
       <main className="home-main-content">
         <Outlet context={{ user }} />

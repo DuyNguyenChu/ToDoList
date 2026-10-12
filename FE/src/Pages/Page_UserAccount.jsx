@@ -576,7 +576,11 @@ const Page_UserAccount = () => {
                         </button>
                         {activeMenuUserId === item.userId && (
                           <div
-                            className="action-dropdown-menu"
+                            className={`action-dropdown-menu ${
+                              filteredUsers.length > 2 && index === filteredUsers.length - 1
+                                ? "dropdown-upward"
+                                : ""
+                            }`}
                             onClick={(e) => e.stopPropagation()}
                           >
                             <button

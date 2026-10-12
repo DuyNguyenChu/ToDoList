@@ -284,7 +284,7 @@ const Page_ToDoList = () => {
             </span>
           </div>
           <div className="summary-item total-price-item">
-            <span className="summary-label">Tổng tiền (Máy chủ tính):</span>
+            <span className="summary-label">Ước tính:</span>
             <span className="summary-value total-price-value">
               {formatCurrency(
                 toDoLists[0]?.totalPrice ?? toDoLists[0]?.TotalPrice ?? 0

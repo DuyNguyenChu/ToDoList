@@ -200,7 +200,7 @@ const Page_Store = () => {
             <th>Vị trí</th>
             <th>Khoảng cách</th>
             <th>Trạng thái</th>
-            {user && <th>Hành động</th>}
+            <th>Hành động</th>
           </tr>
         </thead>
         <tbody>
@@ -273,16 +273,16 @@ const Page_Store = () => {
                   {store.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
                 </span>
               </td>
-              {user && (
-                <td data-label="Hành động" className="action-cell">
-                  <div className="store-action-buttons">
-                    <button
-                      type="button"
-                      className="btn-store-view"
-                      onClick={() => navigate(`/cua-hang/${store.storeId}`)}
-                    >
-                      Xem
-                    </button>
+              <td data-label="Hành động" className="action-cell">
+                <div className="store-action-buttons">
+                  <button
+                    type="button"
+                    className="btn-store-view"
+                    onClick={() => navigate(`/cua-hang/${store.storeId}`)}
+                  >
+                    Xem
+                  </button>
+                  {user && (
                     <button
                       type="button"
                       className="btn-store-edit"
@@ -290,9 +290,9 @@ const Page_Store = () => {
                     >
                       Sửa
                     </button>
-                  </div>
-                </td>
-              )}
+                  )}
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>
