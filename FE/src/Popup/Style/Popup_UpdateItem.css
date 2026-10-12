@@ -1,0 +1,83 @@
+@import "./Popup_AddItem.css";
+
+.popup-container,
+.add-item-popup {
+  box-sizing: border-box;
+  overflow-x: hidden !important;
+}
+
+.popup-body {
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.item-store-inputs,
+.input-group,
+.form-row {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.popup-footer.update-item-footer,
+.update-item-footer {
+  box-sizing: border-box;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+.footer-right-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-delete-item {
+  padding: 8px 18px;
+  background-color: #dc3545;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+}
+
+.btn-delete-item:hover {
+  background-color: #c82333;
+  box-shadow: 0 4px 8px rgba(200, 35, 51, 0.3);
+}
+
+.btn-delete-item:disabled,
+.btn-save:disabled,
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (max-width: 600px) {
+  .popup-footer.update-item-footer {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .btn-delete-item {
+    width: 100%;
+    min-height: 40px;
+  }
+
+  .footer-right-actions {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+  }
+
+  .footer-right-actions button {
+    flex: 1;
+    min-height: 40px;
+  }
+}
