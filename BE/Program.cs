@@ -32,7 +32,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
     {
-        policy.SetIsOriginAllowed(_ => true)
+        policy.WithOrigins(
+                "http://localhost:5173",
+                "https://do-can-mua-to-do-list.vercel.app"
+              )
+              .SetIsOriginAllowed(origin =>
+                  origin.StartsWith("http://localhost") ||
+                  origin.EndsWith(".vercel.app"))
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
