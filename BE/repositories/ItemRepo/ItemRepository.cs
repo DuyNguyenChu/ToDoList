@@ -29,7 +29,17 @@ namespace BE.repositories.ItemRepo
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 var trimmed = keyword.Trim();
-                query = query.Where(x => x.ItemName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ItemName), $"%{EF.Functions.Unaccent(trimmed)}%"));
+                try
+                {
+                    var testQuery = query.Where(x => x.ItemName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ItemName), $"%{EF.Functions.Unaccent(trimmed)}%"));
+                    int total = await testQuery.CountAsync();
+                    var list = await testQuery.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+                    return (list, total);
+                }
+                catch
+                {
+                    query = query.Where(x => x.ItemName != null && EF.Functions.ILike(x.ItemName, $"%{trimmed}%"));
+                }
             }
 
             int totalCount = await query.CountAsync();

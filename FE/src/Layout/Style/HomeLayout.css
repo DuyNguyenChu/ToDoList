@@ -167,8 +167,6 @@
 .home-main-content {
     padding: 30px;
     flex: 1;
-    position: relative;
-    z-index: 1;
 }
 
 @media (max-width: 768px) {

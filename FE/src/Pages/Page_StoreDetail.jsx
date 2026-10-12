@@ -12,6 +12,7 @@ import Popup_UpdateStore from "../Popup/Popup_UpdateStore";
 import Popup_UpdateItem from "../Popup/Popup_UpdateItem";
 import { showToast } from "../Components/Toast/Toast";
 import { formatCurrency } from "../utils/formatCurrency";
+import { matchesKeyword, removeVietnameseTones } from "../utils/vietnameseHelper";
 import "./Style/Page_StoresItemsItemInformation.css";
 import "./Style/Page_StoreDetail.css";
 
@@ -126,14 +127,22 @@ const Page_StoreDetail = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [storeRes, itemsRes] = await Promise.all([
-          getStoreById(id),
-          getStoresItemsByStoreId(id, keyword),
-        ]);
+        let itemsData = [];
+        try {
+          const itemsRes = await getStoresItemsByStoreId(id, keyword);
+          itemsData = itemsRes.data || [];
+        } catch {
+          try {
+            const fallbackRes = await getStoresItemsByStoreId(id);
+            itemsData = fallbackRes.data || [];
+          } catch (err2) {
+            console.error("Lỗi lấy vật phẩm:", err2);
+          }
+        }
 
         if (!ignore) {
           setStore(storeRes.data);
-          setItems(itemsRes.data || []);
+          setItems(itemsData);
         }
 
         if (user && !ignore) {
@@ -203,24 +212,7 @@ const Page_StoreDetail = () => {
     }
   };
 
-  const removeVietnameseTones = (str) => {
-    if (!str) return "";
-    return String(str)
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/đ/g, "d")
-      .replace(/Đ/g, "D")
-      .toLowerCase();
-  };
 
-  const matchesKeyword = (text, kw) => {
-    if (!kw) return true;
-    if (!text) return false;
-    const s = String(text).toLowerCase();
-    const k = String(kw).toLowerCase();
-    if (s.includes(k)) return true;
-    return removeVietnameseTones(s).includes(removeVietnameseTones(k));
-  };
 
   const getItemPrice = (item) => {
     const price = item.itemInformationPrice ?? item.ItemInformationPrice;

@@ -3,6 +3,7 @@ import { useLocation, useOutletContext, useNavigate } from "react-router-dom";
 import { getAllStores, searchStores } from "../API/API_Store";
 import { useSignalREvent } from "../Hooks/useSignalR";
 import { useUserLocation } from "../Hooks/useUserLocation";
+import { matchesKeyword } from "../utils/vietnameseHelper";
 import Popup_UpdateStore from "../Popup/Popup_UpdateStore";
 import Popup_LocationPicker from "../Popup/Popup_LocationPicker";
 import "./Style/Page_Store.css";
@@ -64,6 +65,9 @@ const Page_Store = () => {
   const user = Outletcontext?.user;
   const { userCoords, getDistanceFromUser } = useUserLocation();
 
+  const searchParams = new URLSearchParams(location.search);
+  const keyword = (searchParams.get("search") || "").trim();
+
   useSignalREvent("ReceiveStoreCreated", (newStore) => {
     if (!newStore) return;
     setStores((prev) => {
@@ -96,15 +100,20 @@ const Page_Store = () => {
 
         let response;
         if (keyword) {
-          response = await searchStores(keyword, 1, 100, userCoords);
-          if (!ignore) {
-            setStores(response.data.items || response.data.Items || []);
+          try {
+            response = await searchStores(keyword, 1, 100, userCoords);
+            if (!ignore && response?.data) {
+              setStores(response.data.items || response.data.Items || response.data || []);
+              return;
+            }
+          } catch (searchErr) {
+            console.warn("Tìm kiếm máy chủ không thành công, dùng dữ liệu đầy đủ:", searchErr);
           }
-        } else {
-          response = await getAllStores(userCoords);
-          if (!ignore) {
-            setStores(response.data || []);
-          }
+        }
+
+        response = await getAllStores(userCoords);
+        if (!ignore) {
+          setStores(response.data || []);
         }
       } catch (error) {
         console.error("Lỗi tải dữ liệu cửa hàng:", error);
@@ -147,9 +156,20 @@ const Page_Store = () => {
     return String(gps);
   };
 
-  const sortedStores = useMemo(() => {
+  const filteredStores = useMemo(() => {
     if (!stores || stores.length === 0) return [];
-    return [...stores].sort((a, b) => {
+    if (!keyword) return stores;
+    return stores.filter((s) => {
+      return (
+        matchesKeyword(s.storeName, keyword) ||
+        matchesKeyword(s.storeAddressInText, keyword)
+      );
+    });
+  }, [stores, keyword]);
+
+  const sortedStores = useMemo(() => {
+    if (!filteredStores || filteredStores.length === 0) return [];
+    return [...filteredStores].sort((a, b) => {
       const coordsA = getStoreCoords(a);
       const coordsB = getStoreCoords(b);
       const distA = getDistanceFromUser(coordsA?.lat, coordsA?.lng).distanceKm;
@@ -165,11 +185,11 @@ const Page_Store = () => {
       if (distA == null && distB != null) return 1;
       return (a.storeName || "").localeCompare(b.storeName || "");
     });
-  }, [stores, getDistanceFromUser]);
+  }, [filteredStores, getDistanceFromUser]);
 
   if (loading) return <h2>Đang tải danh sách cửa hàng...</h2>;
 
-  if (!stores || stores.length === 0)
+  if (!filteredStores || filteredStores.length === 0)
     return <h2>Không có cửa hàng nào được tìm thấy.</h2>;
 
   return (

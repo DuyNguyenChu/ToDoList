@@ -9,6 +9,7 @@ import {
 import { useSignalREvent } from "../Hooks/useSignalR";
 import { useUserLocation } from "../Hooks/useUserLocation";
 import { formatCurrency } from "../utils/formatCurrency";
+import { matchesKeyword } from "../utils/vietnameseHelper";
 import Popup_LocationPicker from "../Popup/Popup_LocationPicker";
 import "./Style/Page_ToDoList.css";
 
@@ -23,6 +24,9 @@ const Page_ToDoList = () => {
   const Outletcontext = useOutletContext();
   const user = Outletcontext?.user;
   const { userCoords, getDistanceFromUser } = useUserLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const keyword = (searchParams.get("search") || "").trim();
 
   useSignalREvent("ReceiveToDoCreated", (newToDo) => {
     if (!newToDo) return;
@@ -62,15 +66,20 @@ const Page_ToDoList = () => {
 
         let response;
         if (keyword) {
-          response = await searchToDoLists(keyword, 1, 100, userCoords);
-          if (!ignore) {
-            setToDoLists(response.data.items || response.data.Items || []);
+          try {
+            response = await searchToDoLists(keyword, 1, 100, userCoords);
+            if (!ignore && response?.data) {
+              setToDoLists(response.data.items || response.data.Items || response.data || []);
+              return;
+            }
+          } catch (searchErr) {
+            console.warn("Tìm kiếm máy chủ không thành công, dùng dữ liệu đầy đủ:", searchErr);
           }
-        } else {
-          response = await getAllToDoLists(userCoords);
-          if (!ignore) {
-            setToDoLists(response.data || []);
-          }
+        }
+
+        response = await getAllToDoLists(userCoords);
+        if (!ignore) {
+          setToDoLists(response.data || []);
         }
       } catch (error) {
         console.error("Lỗi tải dữ liệu ToDoList:", error);
@@ -161,9 +170,24 @@ const Page_ToDoList = () => {
     return isNaN(num) ? Infinity : num;
   };
 
-  const sortedToDoLists = useMemo(() => {
+  const filteredToDoLists = useMemo(() => {
     if (!toDoLists || toDoLists.length === 0) return [];
-    return [...toDoLists].sort((a, b) => {
+    if (!keyword) return toDoLists;
+    return toDoLists.filter((item) => {
+      return (
+        matchesKeyword(item.itemName, keyword) ||
+        matchesKeyword(item.storeName, keyword) ||
+        matchesKeyword(item.itemInformationItemType, keyword) ||
+        matchesKeyword(item.itemInformationPrice, keyword) ||
+        matchesKeyword(item.toDoListDecription, keyword) ||
+        matchesKeyword(item.storeAddressInText, keyword)
+      );
+    });
+  }, [toDoLists, keyword]);
+
+  const sortedToDoLists = useMemo(() => {
+    if (!filteredToDoLists || filteredToDoLists.length === 0) return [];
+    return [...filteredToDoLists].sort((a, b) => {
       const coordsA = getItemStoreCoords(a);
       const coordsB = getItemStoreCoords(b);
       const distA = getDistanceFromUser(coordsA?.lat, coordsA?.lng).distanceKm;
@@ -179,7 +203,7 @@ const Page_ToDoList = () => {
       if (distA == null && distB != null) return 1;
       return getItemPrice(a) - getItemPrice(b);
     });
-  }, [toDoLists, getDistanceFromUser]);
+  }, [filteredToDoLists, getDistanceFromUser]);
 
   const handleToggleDone = async (item) => {
     const nextStatus = !item.isDone;
@@ -260,7 +284,7 @@ const Page_ToDoList = () => {
 
   if (loading) return <h2>Đang tải danh sách cần mua...</h2>;
 
-  if (!toDoLists || toDoLists.length === 0)
+  if (!filteredToDoLists || filteredToDoLists.length === 0)
     return <h2>Không có vật phẩm nào trong danh sách cần mua.</h2>;
 
   return (

@@ -30,11 +30,25 @@ namespace BE.repositories.ItemInformationRepo
                 string trimmed = keyword.Trim();
                 string cleanNum = trimmed.Replace(" ", "").Replace(".", "").Replace(",", "");
 
-                query = query.Where(x =>
-                    (x.ItemInformationItemType != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ItemInformationItemType), $"%{EF.Functions.Unaccent(trimmed)}%")) ||
-                    x.ItemInformationPrice.ToString().Contains(cleanNum) ||
-                    x.ItemInformationPrice.ToString().Contains(trimmed)
-                );
+                try
+                {
+                    var testQuery = query.Where(x =>
+                        (x.ItemInformationItemType != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ItemInformationItemType), $"%{EF.Functions.Unaccent(trimmed)}%")) ||
+                        x.ItemInformationPrice.ToString().Contains(cleanNum) ||
+                        x.ItemInformationPrice.ToString().Contains(trimmed)
+                    );
+                    int total = await testQuery.CountAsync();
+                    var list = await testQuery.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+                    return (list, total);
+                }
+                catch
+                {
+                    query = query.Where(x =>
+                        (x.ItemInformationItemType != null && EF.Functions.ILike(x.ItemInformationItemType, $"%{trimmed}%")) ||
+                        x.ItemInformationPrice.ToString().Contains(cleanNum) ||
+                        x.ItemInformationPrice.ToString().Contains(trimmed)
+                    );
+                }
             }
 
             int totalCount = await query.CountAsync();

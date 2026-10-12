@@ -187,7 +187,7 @@ static string BuildNpgsqlConnectionString(string raw)
             var database = uri.AbsolutePath.TrimStart('/');
             if (string.IsNullOrEmpty(database)) database = "postgres";
 
-            return $"Host={uri.Host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+            return $"Host={uri.Host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;Search Path=public,extensions;";
         }
         catch
         {
@@ -199,6 +199,11 @@ static string BuildNpgsqlConnectionString(string raw)
     if (!raw.Contains("SSL Mode", StringComparison.OrdinalIgnoreCase))
     {
         raw = raw.TrimEnd(';') + ";SSL Mode=Require;Trust Server Certificate=true;";
+    }
+
+    if (!raw.Contains("Search Path", StringComparison.OrdinalIgnoreCase))
+    {
+        raw = raw.TrimEnd(';') + ";Search Path=public,extensions;";
     }
 
     return raw;

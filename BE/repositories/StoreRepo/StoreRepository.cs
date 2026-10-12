@@ -29,10 +29,23 @@ namespace BE.repositories.StoreRepo
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 var kw = keyword.Trim();
-                query = query.Where(x => 
-                    (x.StoreName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoreName), $"%{EF.Functions.Unaccent(kw)}%")) ||
-                    (x.StoreAddressInText != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoreAddressInText), $"%{EF.Functions.Unaccent(kw)}%"))
-                );
+                try
+                {
+                    var testQuery = query.Where(x => 
+                        (x.StoreName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoreName), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                        (x.StoreAddressInText != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoreAddressInText), $"%{EF.Functions.Unaccent(kw)}%"))
+                    );
+                    int total = await testQuery.CountAsync();
+                    var list = await testQuery.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+                    return (list, total);
+                }
+                catch
+                {
+                    query = query.Where(x => 
+                        (x.StoreName != null && EF.Functions.ILike(x.StoreName, $"%{kw}%")) ||
+                        (x.StoreAddressInText != null && EF.Functions.ILike(x.StoreAddressInText, $"%{kw}%"))
+                    );
+                }
             }
 
             int totalCount = await query.CountAsync();

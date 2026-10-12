@@ -12,6 +12,7 @@ import {
 import { useSignalREvent } from "../Hooks/useSignalR";
 import { useUserLocation } from "../Hooks/useUserLocation";
 import { formatCurrency } from "../utils/formatCurrency";
+import { matchesKeyword } from "../utils/vietnameseHelper";
 import Popup_UpdateItem from "../Popup/Popup_UpdateItem";
 import Popup_LocationPicker from "../Popup/Popup_LocationPicker";
 import "./Style/Page_StoresItemsItemInformation.css";
@@ -81,6 +82,9 @@ const Page_StoresItemsItemInformation = () => {
   const Outletcontext = useOutletContext();
   const user = Outletcontext?.user;
   const { userCoords, getDistanceFromUser } = useUserLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const keyword = (searchParams.get("search") || "").trim();
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -171,17 +175,22 @@ const Page_StoresItemsItemInformation = () => {
 
         let response;
         if (keyword) {
-          response = await searchStoresItemsItemInformation(keyword, 1, 100, userCoords);
-          if (!ignore) {
-            setStoresItemsItemInformation(
-              response.data.items || response.data.Items || [],
-            );
+          try {
+            response = await searchStoresItemsItemInformation(keyword, 1, 100, userCoords);
+            if (!ignore && response?.data) {
+              setStoresItemsItemInformation(
+                response.data.items || response.data.Items || response.data || [],
+              );
+              return;
+            }
+          } catch (searchErr) {
+            console.warn("Tìm kiếm máy chủ không thành công, dùng dữ liệu đầy đủ:", searchErr);
           }
-        } else {
-          response = await getAllStoresItemsItemInformation(userCoords);
-          if (!ignore) {
-            setStoresItemsItemInformation(response.data || []);
-          }
+        }
+
+        response = await getAllStoresItemsItemInformation(userCoords);
+        if (!ignore) {
+          setStoresItemsItemInformation(response.data || []);
         }
 
         if (user) {
@@ -247,10 +256,25 @@ const Page_StoresItemsItemInformation = () => {
 
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const sortedItems = useMemo(() => {
+  const filteredItems = useMemo(() => {
     if (!storesItemsItemInformation || storesItemsItemInformation.length === 0)
       return [];
-    return [...storesItemsItemInformation].sort((a, b) => {
+    if (!keyword) return storesItemsItemInformation;
+    return storesItemsItemInformation.filter((item) => {
+      return (
+        matchesKeyword(item.itemName, keyword) ||
+        matchesKeyword(item.storeName, keyword) ||
+        matchesKeyword(item.itemInformationItemType, keyword) ||
+        matchesKeyword(item.itemInformationPrice, keyword) ||
+        matchesKeyword(item.storeAddressInText, keyword)
+      );
+    });
+  }, [storesItemsItemInformation, keyword]);
+
+  const sortedItems = useMemo(() => {
+    if (!filteredItems || filteredItems.length === 0)
+      return [];
+    return [...filteredItems].sort((a, b) => {
       const coordsA = getItemStoreCoords(a);
       const coordsB = getItemStoreCoords(b);
       const distA = getDistanceFromUser(coordsA?.lat, coordsA?.lng).distanceKm;
@@ -268,11 +292,11 @@ const Page_StoresItemsItemInformation = () => {
       if (distA == null && distB != null) return 1;
       return priceA - priceB;
     });
-  }, [storesItemsItemInformation, getDistanceFromUser]);
+  }, [filteredItems, getDistanceFromUser]);
 
   if (loading) return <h2>Đang tải danh sách hàng hóa...</h2>;
 
-  if (!storesItemsItemInformation || storesItemsItemInformation.length === 0)
+  if (!filteredItems || filteredItems.length === 0)
     return <h2>Không có hàng hóa nào được tìm thấy.</h2>;
   return (
     <div className="table-responsive-container">

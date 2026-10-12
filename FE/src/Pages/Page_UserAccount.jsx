@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
-import { useOutletContext, useLocation } from "react-router-dom";
+import { useOutletContext, useLocation, useNavigate } from "react-router-dom";
 import { getAllUsers, deleteUser, updateUserRole } from "../API/API_User";
 import { getAllRoles } from "../API/API_Role";
 import signalrService, { useSignalREvent } from "../Hooks/useSignalR";
-import { useDebounce } from "../Hooks/useDebounce";
+import { matchesKeyword } from "../utils/vietnameseHelper";
 import Popup_UserAccountDetail from "../Popup/Popup_UserAccountDetail";
 import "./Style/Page_UserAccount.css";
 
@@ -11,8 +11,6 @@ const Page_UserAccount = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearchTerm = useDebounce(searchTerm, 1000);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedUserForDetail, setSelectedUserForDetail] = useState(null);
 
@@ -36,6 +34,27 @@ const Page_UserAccount = () => {
   const outletContext = useOutletContext();
   const currentUser = outletContext?.user;
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const searchParams = new URLSearchParams(location.search);
+  const keyword = (searchParams.get("search") || "").trim();
+
+  const [searchTerm, setSearchTerm] = useState(keyword);
+
+  useEffect(() => {
+    setSearchTerm(keyword);
+  }, [keyword]);
+
+  const handleSearchChange = (val) => {
+    setSearchTerm(val);
+    const params = new URLSearchParams(location.search);
+    if (val.trim()) {
+      params.set("search", val);
+    } else {
+      params.delete("search");
+    }
+    navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+  };
 
   const fetchUsers = async () => {
     try {
@@ -84,7 +103,7 @@ const Page_UserAccount = () => {
     };
 
     loadAndSync();
-  }, [location.search]);
+  }, []);
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -330,17 +349,17 @@ const Page_UserAccount = () => {
   });
 
   const filteredUsers = useMemo(() => {
-    if (!debouncedSearchTerm.trim()) return users;
-    const term = debouncedSearchTerm.toLowerCase();
+    if (!keyword) return users;
     return users.filter((u) => {
       return (
-        u.userName?.toLowerCase().includes(term) ||
-        u.userEmail?.toLowerCase().includes(term) ||
-        u.userPhone?.toLowerCase().includes(term) ||
-        u.roleName?.toLowerCase().includes(term)
+        matchesKeyword(u.userName, keyword) ||
+        matchesKeyword(u.userEmail, keyword) ||
+        matchesKeyword(u.userPhone, keyword) ||
+        matchesKeyword(u.roleName, keyword) ||
+        matchesKeyword(u.userAddressInText, keyword)
       );
     });
-  }, [users, debouncedSearchTerm]);
+  }, [users, keyword]);
 
   const onlineCount = users.filter(
     (u) => (u.isOnline ?? u.IsOnline) === true
@@ -427,12 +446,12 @@ const Page_UserAccount = () => {
             className="account-search-input"
             placeholder="Tìm theo tên, email, SĐT, vai trò..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
           {searchTerm && (
             <button
               className="clear-search-btn"
-              onClick={() => setSearchTerm("")}
+              onClick={() => handleSearchChange("")}
               title="Xóa tìm kiếm"
             >
               ✕

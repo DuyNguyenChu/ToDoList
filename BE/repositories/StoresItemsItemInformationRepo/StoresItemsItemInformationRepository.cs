@@ -45,10 +45,20 @@ namespace BE.repositories.StoresItemsItemInformationRepo
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 var kw = keyword.Trim();
-                query = query.Where(x =>
-                    (x.Item != null && x.Item.ItemName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Item.ItemName), $"%{EF.Functions.Unaccent(kw)}%")) ||
-                    (x.ItemInformation != null && x.ItemInformation.ItemInformationItemType != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ItemInformation.ItemInformationItemType), $"%{EF.Functions.Unaccent(kw)}%"))
-                );
+                try
+                {
+                    return await query.Where(x =>
+                        (x.Item != null && x.Item.ItemName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Item.ItemName), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                        (x.ItemInformation != null && x.ItemInformation.ItemInformationItemType != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ItemInformation.ItemInformationItemType), $"%{EF.Functions.Unaccent(kw)}%"))
+                    ).ToListAsync();
+                }
+                catch
+                {
+                    return await query.Where(x =>
+                        (x.Item != null && x.Item.ItemName != null && EF.Functions.ILike(x.Item.ItemName, $"%{kw}%")) ||
+                        (x.ItemInformation != null && x.ItemInformation.ItemInformationItemType != null && EF.Functions.ILike(x.ItemInformation.ItemInformationItemType, $"%{kw}%"))
+                    ).ToListAsync();
+                }
             }
 
             return await query.ToListAsync();
@@ -66,11 +76,25 @@ namespace BE.repositories.StoresItemsItemInformationRepo
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 var kw = keyword.Trim();
-                query = query.Where(x => 
-                    (x.Item != null && x.Item.ItemName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Item.ItemName), $"%{EF.Functions.Unaccent(kw)}%")) ||
-                    (x.Store != null && x.Store.StoreName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Store.StoreName), $"%{EF.Functions.Unaccent(kw)}%")) ||
-                    (x.ItemInformation != null && x.ItemInformation.ItemInformationItemType != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ItemInformation.ItemInformationItemType), $"%{EF.Functions.Unaccent(kw)}%"))
-                );
+                try
+                {
+                    var testQuery = query.Where(x => 
+                        (x.Item != null && x.Item.ItemName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Item.ItemName), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                        (x.Store != null && x.Store.StoreName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Store.StoreName), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                        (x.ItemInformation != null && x.ItemInformation.ItemInformationItemType != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ItemInformation.ItemInformationItemType), $"%{EF.Functions.Unaccent(kw)}%"))
+                    );
+                    int total = await testQuery.CountAsync();
+                    var list = await testQuery.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+                    return (list, total);
+                }
+                catch
+                {
+                    query = query.Where(x => 
+                        (x.Item != null && x.Item.ItemName != null && EF.Functions.ILike(x.Item.ItemName, $"%{kw}%")) ||
+                        (x.Store != null && x.Store.StoreName != null && EF.Functions.ILike(x.Store.StoreName, $"%{kw}%")) ||
+                        (x.ItemInformation != null && x.ItemInformation.ItemInformationItemType != null && EF.Functions.ILike(x.ItemInformation.ItemInformationItemType, $"%{kw}%"))
+                    );
+                }
             }
 
             int totalCount = await query.CountAsync();

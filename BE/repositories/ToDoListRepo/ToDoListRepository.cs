@@ -53,12 +53,27 @@ namespace BE.repositories.ToDoListRepo
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 var kw = keyword.Trim();
-                query = query.Where(x => 
-                    (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.Item != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoresItemsItemInformation.Item.ItemName), $"%{EF.Functions.Unaccent(kw)}%")) ||
-                    (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.Store != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoresItemsItemInformation.Store.StoreName), $"%{EF.Functions.Unaccent(kw)}%")) ||
-                    (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.ItemInformation != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoresItemsItemInformation.ItemInformation.ItemInformationItemType), $"%{EF.Functions.Unaccent(kw)}%")) ||
-                    (x.ToDoListDecription != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ToDoListDecription), $"%{EF.Functions.Unaccent(kw)}%"))
-                );
+                try
+                {
+                    var testQuery = query.Where(x => 
+                        (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.Item != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoresItemsItemInformation.Item.ItemName), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                        (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.Store != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoresItemsItemInformation.Store.StoreName), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                        (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.ItemInformation != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoresItemsItemInformation.ItemInformation.ItemInformationItemType), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                        (x.ToDoListDecription != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ToDoListDecription), $"%{EF.Functions.Unaccent(kw)}%"))
+                    );
+                    int total = await testQuery.CountAsync();
+                    var list = await testQuery.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+                    return (list, total);
+                }
+                catch
+                {
+                    query = query.Where(x => 
+                        (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.Item != null && EF.Functions.ILike(x.StoresItemsItemInformation.Item.ItemName, $"%{kw}%")) ||
+                        (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.Store != null && EF.Functions.ILike(x.StoresItemsItemInformation.Store.StoreName, $"%{kw}%")) ||
+                        (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.ItemInformation != null && EF.Functions.ILike(x.StoresItemsItemInformation.ItemInformation.ItemInformationItemType, $"%{kw}%")) ||
+                        (x.ToDoListDecription != null && EF.Functions.ILike(x.ToDoListDecription, $"%{kw}%"))
+                    );
+                }
             }
 
             int totalCount = await query.CountAsync();
