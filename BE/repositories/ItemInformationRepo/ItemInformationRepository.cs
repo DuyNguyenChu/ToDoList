@@ -31,7 +31,7 @@ namespace BE.repositories.ItemInformationRepo
                 string cleanNum = trimmed.Replace(" ", "").Replace(".", "").Replace(",", "");
 
                 query = query.Where(x =>
-                    (x.ItemInformationItemType != null && x.ItemInformationItemType.Contains(trimmed)) ||
+                    (x.ItemInformationItemType != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ItemInformationItemType), $"%{EF.Functions.Unaccent(trimmed)}%")) ||
                     x.ItemInformationPrice.ToString().Contains(cleanNum) ||
                     x.ItemInformationPrice.ToString().Contains(trimmed)
                 );

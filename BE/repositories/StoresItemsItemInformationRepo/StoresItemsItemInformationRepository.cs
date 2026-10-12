@@ -46,8 +46,8 @@ namespace BE.repositories.StoresItemsItemInformationRepo
             {
                 var kw = keyword.Trim();
                 query = query.Where(x =>
-                    (x.Item != null && x.Item.ItemName != null && x.Item.ItemName.Contains(kw)) ||
-                    (x.ItemInformation != null && x.ItemInformation.ItemInformationItemType != null && x.ItemInformation.ItemInformationItemType.Contains(kw))
+                    (x.Item != null && x.Item.ItemName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Item.ItemName), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                    (x.ItemInformation != null && x.ItemInformation.ItemInformationItemType != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ItemInformation.ItemInformationItemType), $"%{EF.Functions.Unaccent(kw)}%"))
                 );
             }
 
@@ -67,9 +67,9 @@ namespace BE.repositories.StoresItemsItemInformationRepo
             {
                 var kw = keyword.Trim();
                 query = query.Where(x => 
-                    (x.Item != null && x.Item.ItemName != null && x.Item.ItemName.Contains(kw)) ||
-                    (x.Store != null && x.Store.StoreName != null && x.Store.StoreName.Contains(kw)) ||
-                    (x.ItemInformation != null && x.ItemInformation.ItemInformationItemType != null && x.ItemInformation.ItemInformationItemType.Contains(kw))
+                    (x.Item != null && x.Item.ItemName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Item.ItemName), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                    (x.Store != null && x.Store.StoreName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.Store.StoreName), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                    (x.ItemInformation != null && x.ItemInformation.ItemInformationItemType != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ItemInformation.ItemInformationItemType), $"%{EF.Functions.Unaccent(kw)}%"))
                 );
             }
 

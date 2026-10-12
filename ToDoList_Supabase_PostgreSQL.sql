@@ -4,8 +4,9 @@
 -- Cách dùng: Mở Supabase -> Chọn Project -> Chọn "SQL Editor" -> Dán toàn bộ mã này -> Bấm "RUN"
 -- =========================================================================
 
--- Kích hoạt extension pgcrypto để sinh UUID ngẫu nhiên
+-- Kích hoạt extension pgcrypto để sinh UUID ngẫu nhiên và unaccent để tìm kiếm Tiếng Việt không dấu
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "unaccent";
 
 -- 1. BẢNG Roles (Vai trò người dùng)
 CREATE TABLE IF NOT EXISTS "Roles" (

@@ -54,10 +54,10 @@ namespace BE.repositories.ToDoListRepo
             {
                 var kw = keyword.Trim();
                 query = query.Where(x => 
-                    (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.Item != null && x.StoresItemsItemInformation.Item.ItemName.Contains(kw)) ||
-                    (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.Store != null && x.StoresItemsItemInformation.Store.StoreName.Contains(kw)) ||
-                    (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.ItemInformation != null && x.StoresItemsItemInformation.ItemInformation.ItemInformationItemType.Contains(kw)) ||
-                    (x.ToDoListDecription != null && x.ToDoListDecription.Contains(kw))
+                    (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.Item != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoresItemsItemInformation.Item.ItemName), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                    (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.Store != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoresItemsItemInformation.Store.StoreName), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                    (x.StoresItemsItemInformation != null && x.StoresItemsItemInformation.ItemInformation != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoresItemsItemInformation.ItemInformation.ItemInformationItemType), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                    (x.ToDoListDecription != null && EF.Functions.ILike(EF.Functions.Unaccent(x.ToDoListDecription), $"%{EF.Functions.Unaccent(kw)}%"))
                 );
             }
 

@@ -137,11 +137,12 @@ try
 {
     using var startupScope = app.Services.CreateScope();
     var dbContext = startupScope.ServiceProvider.GetRequiredService<ToDolistContext>();
+    await dbContext.Database.ExecuteSqlRawAsync("CREATE EXTENSION IF NOT EXISTS unaccent;");
     await dbContext.Users.ExecuteUpdateAsync(u => u.SetProperty(x => x.IsOnline, false));
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"[Startup] Lỗi đặt lại IsOnline: {ex.Message}");
+    Console.WriteLine($"[Startup] Lỗi khởi tạo: {ex.Message}");
 }
 
 // Configure the HTTP request pipeline.

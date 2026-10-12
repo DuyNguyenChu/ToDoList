@@ -28,9 +28,10 @@ namespace BE.repositories.StoreRepo
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
+                var kw = keyword.Trim();
                 query = query.Where(x => 
-                    (x.StoreName != null && x.StoreName.Contains(keyword)) ||
-                    (x.StoreAddressInText != null && x.StoreAddressInText.Contains(keyword))
+                    (x.StoreName != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoreName), $"%{EF.Functions.Unaccent(kw)}%")) ||
+                    (x.StoreAddressInText != null && EF.Functions.ILike(EF.Functions.Unaccent(x.StoreAddressInText), $"%{EF.Functions.Unaccent(kw)}%"))
                 );
             }
 
