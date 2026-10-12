@@ -34,7 +34,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 "http://localhost:5173",
-                "https://do-can-mua-to-do-list.vercel.app"
+                "https://do-can-muato-do-list.vercel.app"
               )
               .SetIsOriginAllowed(origin =>
                   origin.StartsWith("http://localhost") ||
