@@ -49,7 +49,9 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContextPool<ToDolistContext>(options =>
 {
-    var rawConnection = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+    var rawConnection = Environment.GetEnvironmentVariable("DATABASE_URL")
+        ?? builder.Configuration.GetConnectionString("DefaultConnection") 
+        ?? string.Empty;
     var npgsqlConnection = BuildNpgsqlConnectionString(rawConnection);
     options.UseNpgsql(npgsqlConnection, npgsqlOptions =>
     {
