@@ -127,6 +127,7 @@ const Page_StoreDetail = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        const storeRes = await getStoreById(id);
         let itemsData = [];
         try {
           const itemsRes = await getStoresItemsByStoreId(id, keyword);
